@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rick-and-morty-chart.fullname" . }}
+  labels:
+    {{- include "rick-and-morty-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "rick-and-morty-chart.selectorLabels" . | nindent 4 }}

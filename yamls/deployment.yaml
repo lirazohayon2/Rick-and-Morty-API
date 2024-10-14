@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rick-and-morty-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rick-and-morty
+  template:
+    metadata:
+      labels:
+        app: rick-and-morty
+    spec:
+      containers:
+      - name: rick-and-morty-container
+        image: rick_and_morty_api:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
