@@ -23,7 +23,7 @@ def fetch_characters():
             response.raise_for_status()  # Check if the request was successful
         except requests.exceptions.RequestException as e:
             print(f"Error during API call: {e}")
-            break
+            raise
 
         data = response.json()
 
