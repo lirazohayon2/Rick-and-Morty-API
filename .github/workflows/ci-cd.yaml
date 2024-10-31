@@ -1,0 +1,79 @@
+name: Python application CI/CD Pipeline
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+
+env:
+  PYTHON_VERSION: '3.x'
+  DOCKER_IMAGE: 'rick_and_morty_api'
+  DOCKER_TAG: 'latest'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: CI - Checkout the code from the GitHub repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: CI - Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    # Step 3: CI - Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Step 4: CI - Run unit tests
+    - name: Run tests
+      run: |
+        python -m unittest discover
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 5: Checkout code again for Docker build
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 6: Set up Minikube and Docker Environment
+    - name: Set up Minikube
+      run: |
+        curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        chmod +x minikube
+        sudo mv minikube /usr/local/bin/
+        minikube start --driver=docker
+        eval $(minikube docker-env)
+
+    # Step 7: Build Docker image in Minikube
+    - name: Build Docker image for Minikube
+      run: |
+        docker build -t ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} .
+
+    # Step 8: Install Helm
+    - name: Install Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+    # Step 9: Deploy to Minikube using Helm
+    - name: Deploy to Minikube
+      run: |
+        helm upgrade --install rick-and-morty-release ./rick-and-morty-chart \
+          --set image.repository=${{ env.DOCKER_IMAGE }} \
+          --set image.tag=${{ env.DOCKER_TAG }}
+
+    # Step 10: Verify deployment
+    - name: Verify Deployment
+      run: |
+        kubectl get pods
+        kubectl get services
