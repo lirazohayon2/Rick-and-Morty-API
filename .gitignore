@@ -1,0 +1,22 @@
+# Ignore PyCharm project files
+.idea/
+
+# Ignore Terraform files that store state and plan information
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform/
+crash.log
+
+# Ignore SSH keys and credentials files
+*.pem
+*.pub
+~/.ssh/
+.aws/
+
+# Ignore Python virtual environment
+.venv/
+__pycache__/
+
+# Ignore Docker-related files
+*.env
