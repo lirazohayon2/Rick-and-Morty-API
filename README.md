@@ -1,118 +1,93 @@
 # Rick and Morty API Project
 
 ## Description
-This project queries the Rick and Morty API to retrieve characters that meet specific conditions: species as "Human", status as "Alive", and origin as "Earth (C-137)". The results include the character's name, location, and image link. The data is then written to a CSV file and exposed via a REST API using Flask.
+This project queries the Rick and Morty API to retrieve characters that meet specific conditions: species as "Human," status as "Alive," and origin as "Earth (C-137)." The results include the character's name, location, and image link. The data is then written to a CSV file and exposed via a REST API using Flask, with support for deployment to AWS using Docker and Terraform.
 
 ## Features
-- Query the Rick and Morty API for characters.
-- Filter characters based on species, status, and origin.
-- Write results to a CSV file.
-- REST API endpoints for fetching character data.
-- Health check endpoint.
+- Query the Rick and Morty API for characters based on specific criteria.
+- Filter characters by species, status, and origin.
+- Store results in a CSV file for easy data management.
+- Expose a REST API with Flask for retrieving character data.
+- Include a health check endpoint for monitoring API availability.
+- Dockerized application for containerized deployment on AWS.
+- Infrastructure-as-Code (IaC) with Terraform for automated AWS resource setup.
 
-## Requirements
-- The script must query the Rick and Morty API and fetch characters that:
-  - Are of species "Human".
-  - Have the status "Alive".
-  - Originated from "Earth (C-137)".
+---
 
-## Getting Started
+## Deployment to AWS with Terraform and Docker
 
-### Prerequisites
-- Python 3.x
-- Flask
-- Requests
-- Docker
-- Kubernetes (Minikube)
-- Helm
+### 1. AWS Infrastructure Setup using Terraform
 
-### Installation
-1. Clone the repository:
+Ensure that Terraform and the AWS CLI are installed on your machine.
+
+1. **Clone the repository and switch to the correct branch**
    ```bash
-   git clone https://github.com/lirazohayon2/Rick-and-Morty-API.git
+   git clone -b feature/aws-terraform-deployment https://github.com/lirazohayon2/Rick-and-Morty-API.git
    cd Rick-and-Morty-API
    ```
 
-2. Set up a virtual environment and install dependencies:
+2. **Run Terraform to Set Up AWS Resources**
+   Terraform will create a VPC, EC2 instance, security group, and ECR repository.
+
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-   pip install -r requirements.txt
+   terraform init
+   terraform apply
    ```
 
-3. Run the application locally:
+   After completion, Terraform will output the public IP of the EC2 instance.
+
+### 2. Build and Push Docker Image to ECR
+
+1. **Log in to Amazon ECR**
    ```bash
-   python rick_and_morty_script.py
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 888577042232.dkr.ecr.us-east-1.amazonaws.com
    ```
 
-### Dockerizing the Application
-1. Create a Dockerfile that sets up the environment and runs the application.
-
-2. Build the Docker image:
+2. **Build the Docker Image**
    ```bash
-   docker build -t rick_and_morty_api .
+   docker build -t rick_and_morty_api:latest .
    ```
 
-3. Run the Docker container:
+3. **Tag and Push the Docker Image**
    ```bash
-   docker run -p 5000:5000 rick_and_morty_api
+   docker tag rick_and_morty_api:latest 888577042232.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api:latest
+   docker push 888577042232.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api:latest
    ```
 
-### Kubernetes Deployment with Minikube
-1. Start Minikube:
+### 3. Deploy the Docker Container on EC2
+
+1. **SSH into the EC2 Instance**
    ```bash
-   minikube start
+   ssh -i ~/.ssh/rick-and-morty-key ec2-user@<your-ec2-public-ip>
    ```
 
-2. Create the deployment using Helm:
+2. **Log in to Amazon ECR from EC2**
    ```bash
-   helm install rick-and-morty-release ./rick-and-morty-chart
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 888577042232.dkr.ecr.us-east-1.amazonaws.com
    ```
 
-3. Access the service:
+3. **Pull and Run the Docker Image**
    ```bash
-   minikube service rick-and-morty-service
+   docker pull 888577042232.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api:latest
+   docker run -d -p 5000:5000 888577042232.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api:latest
    ```
 
-### Verifying Kubernetes Deployment
+### 4. Test the Application
 
-1. After installing the Helm release, verify that the Pods and services are running correctly by executing:
-   ```bash
-   minikube kubectl -- get pods
-   minikube kubectl -- get services
-   ```
+Once the Docker container is running on EC2, access the application using the public IP:
 
-2. Check that all Pods are in the **Running** state. If the Pods are not running or show errors, use the following command to check the logs:
-   ```bash
-   minikube kubectl -- logs <pod-name>
-   ```
+```bash
+curl http://<your-ec2-public-ip>:5000/characters
+```
 
-3. Access the service using the following command, which will open the service in the browser:
-   ```bash
-   minikube service rick-and-morty-service
-   ```
+This will return a list of characters from the Rick and Morty API.
 
-Once the service is running, replace `<port>` with the port shown in the Minikube output. For example, if Minikube shows the port as 52633, the URLs would be:
+### Clean Up
 
-- **Characters Endpoint**: `http://127.0.0.1:52633/characters`
-- **Health Check**: `http://127.0.0.1:52633/healthcheck`
+To avoid unnecessary AWS charges, destroy the resources when done:
 
+```bash
+terraform destroy
+```
 
-### Troubleshooting
-
-1. If you cannot access the service or the API endpoints, you can check the logs of the running Pods to identify any issues:
-   ```bash
-   minikube kubectl -- logs <pod-name>
-   ```
-
-2. This will show you any errors or issues related to the deployment or the Flask application running inside the Pod.
-
-### API Endpoints
-- **GET /characters**: Retrieves a list of characters meeting the specified conditions.
-- **GET /healthcheck**: Returns the health status of the API.
-
-## CSV Output
-The results are written to a file named `rick_and_morty_characters.csv` in the project directory.
-
-## Acknowledgments
-- [Rick and Morty API](https://rickandmortyapi.com/documentation/#rest)
+--- 
