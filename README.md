@@ -22,7 +22,7 @@ Ensure that Terraform and the AWS CLI are installed on your machine.
 
 1. **Clone the repository and switch to the correct branch**
    ```bash
-   git clone -b feature/aws-terraform-deployment https://github.com/lirazohayon2/Rick-and-Morty-API.git
+   git clone -b aws-terraform-deployment https://github.com/lirazohayon2/Rick-and-Morty-API.git
    cd Rick-and-Morty-API
    ```
 
