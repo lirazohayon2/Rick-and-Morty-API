@@ -2,9 +2,9 @@ name: Python application CI/CD Pipeline
 
 on:
   push:
-    branches: [development]
+    branches: [main, development]
   pull_request:
-    branches: [development]
+    branches: [main, development]
 
 env:
   PYTHON_VERSION: '3.x'
