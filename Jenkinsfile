@@ -4,8 +4,6 @@ pipeline {
   environment {
     AWS_REGION = 'us-east-1'
     ECR_REPO_URL = '123456789012.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api'
-    AWS_ACCESS_KEY_ID = credentials('aws-credentials')
-    AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
   }
 
   stages {
@@ -17,12 +15,16 @@ pipeline {
 
     stage('Terraform Init & Apply') {
       steps {
-        sh '''
-        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-        terraform init
-        terraform apply -auto-approve
-        '''
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-credentials'
+        ]]) {
+          sh '''
+          export AWS_REGION=$AWS_REGION
+          terraform init
+          terraform apply -auto-approve
+          '''
+        }
       }
     }
 
@@ -47,11 +49,16 @@ pipeline {
 
     stage('Build Docker Image') {
       steps {
-        sh '''
-        docker build -t rick-and-morty-api:latest .
-        docker tag rick-and-morty-api:latest $ECR_REPO_URL:latest
-        docker push $ECR_REPO_URL:latest
-        '''
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-credentials'
+        ]]) {
+          sh '''
+          docker build -t rick-and-morty-api:latest .
+          docker tag rick-and-morty-api:latest $ECR_REPO_URL:latest
+          docker push $ECR_REPO_URL:latest
+          '''
+        }
       }
     }
 
@@ -65,11 +72,15 @@ pipeline {
 
     stage('Terraform Destroy') {
       steps {
-        sh '''
-        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-        terraform destroy -auto-approve
-        '''
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-credentials'
+        ]]) {
+          sh '''
+          export AWS_REGION=$AWS_REGION
+          terraform destroy -auto-approve
+          '''
+        }
       }
     }
   }
