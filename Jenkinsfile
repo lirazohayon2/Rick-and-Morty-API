@@ -4,6 +4,8 @@ pipeline {
   environment {
     AWS_REGION = 'us-east-1'
     ECR_REPO_URL = '123456789012.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api'
+    AWS_ACCESS_KEY_ID = credentials('aws-credentials')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
   }
 
   stages {
@@ -16,6 +18,8 @@ pipeline {
     stage('Terraform Init & Apply') {
       steps {
         sh '''
+        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
         terraform init
         terraform apply -auto-approve
         '''
@@ -62,6 +66,8 @@ pipeline {
     stage('Terraform Destroy') {
       steps {
         sh '''
+        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
         terraform destroy -auto-approve
         '''
       }
