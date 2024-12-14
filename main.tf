@@ -76,7 +76,7 @@ resource "aws_instance" "app_server" {
   instance_type = "t2.micro"               # Free-tier eligible instance type
   subnet_id     = aws_subnet.main_subnet.id  # Place instance in the created subnet
   associate_public_ip_address = true  # Ensure public IP association
-  key_name               = "rick-and-morty-key-new" # Use the new key name
+#   key_name               = "rick-and-morty-key-new" # Use the new key name
 
   # Attach Security Group to EC2
   vpc_security_group_ids = [aws_security_group.app_sg.id]
@@ -102,8 +102,8 @@ output "app_server_public_ip" {
   value       = aws_instance.app_server.public_ip
 }
 
-# Add the SSH key pair resource here
-resource "aws_key_pair" "rick_and_morty_key_new" {
-  key_name   = "rick-and-morty-key-new"            # Name of the key pair
-  public_key = file("~/.ssh/rick-and-morty-key-new.pub")  # Path to the public key file
-}
+# # Add the SSH key pair resource here
+# resource "aws_key_pair" "rick_and_morty_key_new" {
+#   key_name   = "rick-and-morty-key-new"            # Name of the key pair
+#   public_key = file("~/.ssh/rick-and-morty-key-new.pub")  # Path to the public key file
+# }
