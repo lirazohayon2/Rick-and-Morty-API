@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     AWS_REGION = 'us-east-1'
-    ECR_REPO_URL = '123456789012.dkr.ecr.us-east-1.amazonaws.com/rick-and-morty-api'
+    ECR_REPO_URL = credentials('ecr-repo-url')
   }
 
   stages {
