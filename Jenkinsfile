@@ -54,6 +54,7 @@ pipeline {
           credentialsId: 'aws-credentials'
         ]]) {
           sh '''
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URL || echo "ECR login failed"
           docker build -t rick-and-morty-api:latest .
           docker tag rick-and-morty-api:latest $ECR_REPO_URL:latest
           docker push $ECR_REPO_URL:latest
