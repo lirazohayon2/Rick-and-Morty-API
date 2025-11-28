@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  PYTHON_VERSION: '3.x'
+  PYTHON_VERSION: '3.12'
   DOCKER_IMAGE: 'rick_and_morty_api'
   DOCKER_TAG: 'latest'
 
